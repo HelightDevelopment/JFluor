@@ -1,11 +1,57 @@
 package dev.helight.jfluor;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.SneakyThrows;
+
+import java.util.Map;
+import java.util.concurrent.*;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+
 public class JFluor {
 
-    private static final JFluor instance = new JFluor();
+    private static final Map<String, JFluor> loggerRegistry = new ConcurrentHashMap<>();
 
-    public JFluor() {
+    @Getter
+    private final String name;
 
+    @Getter
+    private final Logger nativeLogger;
+
+    @Getter
+    private final LogWorker logWorker = this.new LogWorker();
+
+    @Getter @Setter
+    private Level level = Level.INFO;
+
+    @Getter
+    private BlockingDeque<FMSG.MessageSnapshot> messageQueue = new LinkedBlockingDeque<>();
+
+    public JFluor(String name) {
+        this.name = name;
+        this.nativeLogger = Logger.getLogger(name);
+
+        logWorker.start();
+    }
+
+    private void print(FMSG.MessageSnapshot snapshot) {
+        nativeLogger.log(new LogRecord(level, snapshot.getStringBuffer().toString()));
+    }
+
+    class LogWorker extends Thread {
+
+        @Override
+        @SneakyThrows
+        @SuppressWarnings("InfiniteLoopStatement")
+        public void run() {
+            while (true) {
+                FMSG.MessageSnapshot snapshot = messageQueue.take();
+                print(snapshot);
+            }
+        }
     }
 
 }
