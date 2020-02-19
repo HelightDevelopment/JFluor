@@ -1,9 +1,6 @@
 package dev.helight.jfluor;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Splitter;
-import com.google.common.collect.Iterators;
-import com.sun.deploy.util.ArrayUtil;
 import dev.helight.jfluor.abstraction.Loggable;
 import lombok.Getter;
 import org.apache.commons.lang3.ArrayUtils;
@@ -12,10 +9,7 @@ import java.io.Flushable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 public class FMSG implements Appendable, Flushable {
@@ -80,7 +74,7 @@ public class FMSG implements Appendable, Flushable {
         FColor save = colorActive;
         color(color);
         append(symbol.getCode());
-        reset();
+        resetColor();
         if (save != null) color(save);
         return this;
     }
@@ -101,14 +95,21 @@ public class FMSG implements Appendable, Flushable {
         return this;
     }
 
-    public FMSG reset() {
+    public FMSG resetColor() {
         colorActive = null;
         append("\u001b[30m");
         return this;
     }
 
+    public FMSG r() {
+        colorActive = null;
+        append("\r");
+        return this;
+    }
+
     @Override
     public FMSG append(CharSequence csq) {
+        if (csq == null) return this;
         buffer.append(csq);
         return this;
     }
@@ -125,13 +126,18 @@ public class FMSG implements Appendable, Flushable {
         return this;
     }
 
+    public FMSG append(long l) {
+        buffer.append(l);
+        return this;
+    }
+
     MessageSnapshot snapshot() {
         return new MessageSnapshot(buffer);
     }
 
     @Override
     public void flush() {
-        if (colorActive != null) reset();
+        if (colorActive != null) resetColor();
         MessageSnapshot snapshot = snapshot();
         parent.getMessageQueue().add(snapshot);
         buffer.delete(0, buffer.length());

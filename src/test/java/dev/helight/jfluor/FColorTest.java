@@ -3,8 +3,6 @@ package dev.helight.jfluor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 class FColorTest {
 
 
@@ -23,15 +21,15 @@ class FColorTest {
                 .logStack(1);
 
         for (FColor value : FColor.values()) {
-            fmsg.append(value.testString()).append(" ").reset();
+            fmsg.append(value.testString()).append(" ").resetColor();
         }
 
         fmsg
                 .br()
                 .color(FColor.GREEN)
-                .append("Lorem impsum dolor")
+                .append("Lorem impsum dolor ")
                 .symbol(FSymbol.APPLE, FColor.RED)
-                .append("si me amet")
+                .append(" si me amet")
                 .br();
 
         fmsg.flush();

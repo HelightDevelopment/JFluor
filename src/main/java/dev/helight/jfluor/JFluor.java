@@ -28,7 +28,7 @@ public class JFluor {
     private Level level = Level.INFO;
 
     @Getter
-    private BlockingDeque<FMSG.MessageSnapshot> messageQueue = new LinkedBlockingDeque<>();
+    private BlockingQueue<FMSG.MessageSnapshot> messageQueue = new ArrayBlockingQueue(1024);
 
     public JFluor(String name) {
         this.name = name;
@@ -38,7 +38,9 @@ public class JFluor {
     }
 
     private void print(FMSG.MessageSnapshot snapshot) {
-        nativeLogger.log(new LogRecord(level, snapshot.getStringBuffer().toString()));
+        //nativeLogger.log(new LogRecord(level, snapshot.getStringBuffer().toString()));
+        String s = snapshot.stringBuffer.toString();
+        System.out.print(s);
     }
 
     class LogWorker extends Thread {
@@ -50,6 +52,7 @@ public class JFluor {
             while (true) {
                 FMSG.MessageSnapshot snapshot = messageQueue.take();
                 print(snapshot);
+                Thread.sleep(100);
             }
         }
     }
